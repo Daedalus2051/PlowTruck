@@ -76,29 +76,50 @@ namespace PlowTruck
     */
     public class PlowTruck
     {
+        #region Variables
+        // PlowTruck()
+        public string xPath
+        {
+            get;
+            set
+            {
+                if (!(File.Exists(value)))
+                    throw new FileNotFoundException();
+                xPath = value;
+            }
+        }
+        // LoadExtensions()
+        private XmlDocument xmlPlowExtensions;
+        private string[] xmlExtensions;
+        private string[] xmlFolderNames;
+        private string[] xmlActions;
+        // Scan()
         public string ScanDirectory { get; set; }
         public XmlDocument ScanResults { get; }
-        /*
-         * enum_Actions
-         *  0-exclude (skip)
-         *  1-move
-         *  2-delete
-         *  3-archive
-         *  4-move and archive
-         * 
-         * <Results>
-         *   <Result action="1" foldername="Text Documents" extension="txt">C:\Downloads\File.txt</Result>
-         * </Results>
-         * 
-         */
-        
+        public XmlDocument UnmatchedResults { get; }
+        #endregion
+
+        #region Constructors
+        public PlowTruck(string XMLPath)
+        {
+            xPath = XMLPath;
+            // Initialize the XML document internally
+        }
+        #endregion
+
+        #region Methods
         public void Scan()
         {
             string[] dir_files;
 
+            //====================================
+            // Validation/Checks and Balances
+            //====================================
             // Check if the directory exists
             if (!(Directory.Exists(ScanDirectory)))
                 throw new DirectoryNotFoundException();
+            // Check that an XML file has been loaded
+
 
             // Get all of the files in the specified directory
             dir_files = Directory.GetFiles(ScanDirectory);
@@ -110,18 +131,21 @@ namespace PlowTruck
 
         private void AddMatch(PlowActions Action, string FolderName, string Extension, string FilePath)
         {
+            /*
+             * <Results>
+             *   <Result action="1" foldername="Text Documents" extension="txt">C:\Downloads\File.txt</Result>
+             * </Results>
+             */
             XmlDocument xDoc = new XmlDocument();
 
+
         }
 
-        public enum PlowActions
+        private void LoadExtensions()
         {
-            Exclude=0,
-            Move=1,
-            Delete=2,
-            Archive=3,
-            MoveAndArchive=4
-        }
+            // Load the XML document
+            
+        }        
 
         /// <summary>
         /// Find the extension or filename from a full path to a file
@@ -169,5 +193,28 @@ namespace PlowTruck
             tempPath = path.Split('\\');
             return tempPath[(tempPath.Length - 1)];
         }
+        #endregion Methods
+
+        #region Enumerations
+        public enum PlowActions
+        {/*
+         * enum_Actions
+         *  0-exclude (skip)
+         *  1-move
+         *  2-delete
+         *  3-archive
+         *  4-move and archive 
+         */
+            Exclude = 0,
+            Move = 1,
+            Delete = 2,
+            Archive = 3,
+            MoveAndArchive = 4
+        }
+        #endregion Enumerations
+    }
+    private class Log
+    {
+
     }
 }
