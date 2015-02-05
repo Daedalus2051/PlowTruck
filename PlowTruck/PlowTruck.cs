@@ -76,18 +76,98 @@ namespace PlowTruck
     */
     public class PlowTruck
     {
-        public string ScanDirectory
-        {
-            get { return ScanDirectory; }
-            set
-            {
-                
-            }
-
-        }
+        public string ScanDirectory { get; set; }
+        public XmlDocument ScanResults { get; }
+        /*
+         * enum_Actions
+         *  0-exclude (skip)
+         *  1-move
+         *  2-delete
+         *  3-archive
+         *  4-move and archive
+         * 
+         * <Results>
+         *   <Result action="1" foldername="Text Documents" extension="txt">C:\Downloads\File.txt</Result>
+         * </Results>
+         * 
+         */
+        
         public void Scan()
         {
+            string[] dir_files;
 
+            // Check if the directory exists
+            if (!(Directory.Exists(ScanDirectory)))
+                throw new DirectoryNotFoundException();
+
+            // Get all of the files in the specified directory
+            dir_files = Directory.GetFiles(ScanDirectory);
+
+            // Search through files finding ones that match the extension criteria
+
+
+        }
+
+        private void AddMatch(PlowActions Action, string FolderName, string Extension, string FilePath)
+        {
+            XmlDocument xDoc = new XmlDocument();
+
+        }
+
+        public enum PlowActions
+        {
+            Exclude=0,
+            Move=1,
+            Delete=2,
+            Archive=3,
+            MoveAndArchive=4
+        }
+
+        /// <summary>
+        /// Find the extension or filename from a full path to a file
+        /// </summary>
+        /// <param name="path">The fully qualified path (i.e. C:\Folder\SubFolder\File.ext)</param>
+        /// <param name="withoutExt">(Optional) Return the filename without the extension</param>
+        /// <returns>(string) File extenion or filename without extension</returns>
+        private string FindExtension(string path, bool withoutExt = false)
+        {
+            string[] tempPath;
+            string[] tempExt;
+            //Split the pathing apart
+            tempPath = path.Split('\\');
+            //Split the filename and ext apart
+            tempExt = tempPath[(tempPath.Length - 1)].Split('.');
+            //Return the last extension on the file name (this allows for files with multiple periods)
+            if (withoutExt)
+                if (tempExt.Length > 2)
+                {//if the file has more than one period in the name
+                    string tempResult = tempExt[0];
+                    for (int i = 1; i < (tempExt.Length - 1); i++)
+                    {
+                        tempResult = tempResult + "." + tempExt[i];
+                    }
+                    return tempResult;
+                }
+                else
+                {
+                    return tempExt[0];
+                }
+            else
+            {// return normally
+                return tempExt[tempExt.Length - 1];
+            }
+        }
+        /// <summary>
+        /// Find the filename with extension from a full path
+        /// </summary>
+        /// <param name="path">Full path to the file</param>
+        /// <returns>(string) Filename with extension</returns>
+        private string FindFilename(string path)
+        {
+            string[] tempPath;
+            //Split the pathing apart
+            tempPath = path.Split('\\');
+            return tempPath[(tempPath.Length - 1)];
         }
     }
 }
