@@ -215,6 +215,67 @@ namespace PlowTruck
     }
     private class Log
     {
+        #region Variables
+        public string Path
+        {
+            get;
+            set
+            {
+                if (!(Directory.Exists(value)))
+                    throw new DirectoryNotFoundException();
+                Path = value;
+            }
+        }
+        public string Name
+        {
+            get;
+            set
+            {
+                if (!(string.IsNullOrEmpty(value)))
+                    Name = value + ".log";
+            }
+        }
+        public string ErrorMessage { get { return errormsg; } }
+        private string errormsg;
+        #endregion
+        #region Enumerations
+        public enum LOG_TYPE
+        {
+            WARNING,
+            VERBOSE,
+            DEBUG,
+            ERROR,
+            INFO,
+            CONFIG
+        }
+        #endregion
+        #region Constructor
+        public Log(string sPath, string fName)
+        {
+            // Validation occurs in the setters, no need to do double the work
+            Path = sPath;
+            Name = fName;
+        }
+        #endregion
+        #region Methods
+        public bool WriteLog(LOG_TYPE logtype, string message, string code_local)
+        {
+            string full_path = Path + "\\" + Name;
+            try
+            {
+                StreamWriter log_writer = new StreamWriter(full_path, true);
+                //[LOG_TYPE]    Date    Message (Code location)
+                log_writer.WriteLine("[{0}]\t{1}\t{2}\t({3})", logtype, System.DateTime.Now, message, code_local);
+                log_writer.Close();
 
+                return true;
+            }
+            catch(Exception err)
+            {
+                errormsg = "[Log>>WriteLog]: " + err.Message;
+                return false;
+            }
+        }
+        #endregion Methods
     }
 }
