@@ -128,7 +128,6 @@ namespace PlowTruck
                 LoadExtensions();
             // Initialize the XML results doc
             scan_matched = new XmlDocument();
-            scan_matched.CreateElement("Results");
 
             // Get all of the files in the specified directory
             var di = new DirectoryInfo(ScanDirectory);
@@ -137,6 +136,18 @@ namespace PlowTruck
             foreach (FileInfo file in di.GetFiles())
             {
                 bool match = false;
+                int x=0;
+                do {
+                    if (file.Extension.Replace('.', ' ').Trim() == xmlExtensions[x])
+                    {
+                        match = true;
+                        // Validate action
+                        AddMatch(scan_matched, xmlActions[x], xmlFolderNames[x], xmlExtensions[x], file.FullName);
+                    }
+                    else { x++; }
+                } 
+                while (!match);
+
             }
 
         }
@@ -148,14 +159,26 @@ namespace PlowTruck
              *   <Result action="1" foldername="Text Documents" extension="txt">C:\Downloads\File.txt</Result>
              * </Results>
              */
-            XmlElement root = xDoc.CreateElement("Results");
             XmlElement result = xDoc.CreateElement("Result");
-            result.SetAttribute("action", Action.ToString());
-            result.SetAttribute("foldername", FolderName);
-            result.SetAttribute("extension", Extension);
-            result.InnerText = FilePath;
-            root.AppendChild(result);
-            xDoc.AppendChild(root);
+            if (xDoc.DocumentElement != null)
+            {
+                result.SetAttribute("action", Action.ToString());
+                result.SetAttribute("foldername", FolderName);
+                result.SetAttribute("extension", Extension);
+                result.InnerText = FilePath;
+                xDoc.DocumentElement.AppendChild(result);
+            }
+            else
+            {
+                XmlElement root = xDoc.CreateElement("Results");
+                //XmlElement result = xDoc.CreateElement("Result");
+                result.SetAttribute("action", Action.ToString());
+                result.SetAttribute("foldername", FolderName);
+                result.SetAttribute("extension", Extension);
+                result.InnerText = FilePath;
+                root.AppendChild(result);
+                xDoc.AppendChild(root);
+            }
         }
 
         private void LoadExtensions()
