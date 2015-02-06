@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -29,7 +30,7 @@ namespace PlowTruck
     *  <Type>Date,DateRange,Extension,Filename</Type>
     *  <Value>docx,desktop.ini,mmddyy(and variations on that)</Value>
     * 
-    * Changes v0.11 - Alpha 2
+    * Changes v0.11 - (Alpha 2)
     *   -[Direction] Re-writing the Scan and Plow methods to be more dynamic and accept more operations
     * 
     * 
@@ -77,10 +78,10 @@ namespace PlowTruck
     public class PlowTruck
     {
         #region Variables
-        // PlowTruck()
+        // PlowTruck() - These variables will more or less apply globally
         public string xPath
         {
-            get;
+            get { return xPath; }
             set
             {
                 if (!(File.Exists(value)))
@@ -88,6 +89,8 @@ namespace PlowTruck
                 xPath = value;
             }
         }
+        private Log plowLog;
+        public bool VerboseLogging = false;
         // LoadExtensions()
         private XmlDocument xmlPlowExtensions;
         private string[] xmlExtensions;
@@ -95,58 +98,94 @@ namespace PlowTruck
         private string[] xmlActions;
         // Scan()
         public string ScanDirectory { get; set; }
-        public XmlDocument ScanResults { get; }
-        public XmlDocument UnmatchedResults { get; }
+        public XmlDocument ScanResults { get { return scan_matched; } }
+        public XmlDocument UnmatchedResults { get { return scan_unmatched; } }
+        private XmlDocument scan_matched;
+        private XmlDocument scan_unmatched;
         #endregion
 
         #region Constructors
         public PlowTruck(string XMLPath)
         {
             xPath = XMLPath;
+            plowLog = new Log(Environment.CurrentDirectory, "PlowTruck");
             // Initialize the XML document internally
+            LoadExtensions();
         }
         #endregion
 
         #region Methods
         public void Scan()
         {
-            string[] dir_files;
-
             //====================================
             // Validation/Checks and Balances
             //====================================
             // Check if the directory exists
             if (!(Directory.Exists(ScanDirectory)))
                 throw new DirectoryNotFoundException();
-            // Check that an XML file has been loaded
-
+            // Check that an XML file has been loaded, if not then load it
+            if (xmlPlowExtensions == null)
+                LoadExtensions();
+            // Initialize the XML results doc
+            scan_matched = new XmlDocument();
+            scan_matched.CreateElement("Results");
 
             // Get all of the files in the specified directory
-            dir_files = Directory.GetFiles(ScanDirectory);
+            var di = new DirectoryInfo(ScanDirectory);
 
             // Search through files finding ones that match the extension criteria
-
+            foreach (FileInfo file in di.GetFiles())
+            {
+                bool match = false;
+            }
 
         }
 
-        private void AddMatch(PlowActions Action, string FolderName, string Extension, string FilePath)
+        private void AddMatch(XmlDocument xDoc, PlowActions Action, string FolderName, string Extension, string FilePath)
         {
             /*
              * <Results>
              *   <Result action="1" foldername="Text Documents" extension="txt">C:\Downloads\File.txt</Result>
              * </Results>
              */
-            XmlDocument xDoc = new XmlDocument();
-
-
+            XmlElement root = xDoc.CreateElement("Results");
+            XmlElement result = xDoc.CreateElement("Result");
+            result.SetAttribute("action", Action.ToString());
+            result.SetAttribute("foldername", FolderName);
+            result.SetAttribute("extension", Extension);
+            result.InnerText = FilePath;
+            root.AppendChild(result);
+            xDoc.AppendChild(root);
         }
 
         private void LoadExtensions()
         {
+            xmlPlowExtensions = new XmlDocument();
+            if (VerboseLogging)
+                plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, "Loading XML file: " + xPath, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
             // Load the XML document
-            
-        }        
+            xmlPlowExtensions.Load(xPath);
+            var ext = xmlPlowExtensions.SelectNodes("/Extensions/Extension/Name");
+            var folder = xmlPlowExtensions.SelectNodes("/Extensions/Extension/FolderName");
+            var action = xmlPlowExtensions.SelectNodes("/Extensions/Extension/Action");
 
+            xmlExtensions = new string[ext.Count];
+            xmlFolderNames = new string[folder.Count];
+            xmlActions = new string[action.Count];
+
+            for (int i = 0; i < ext.Count; i++)
+            {
+                if (VerboseLogging)
+                    plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, "Loading XML entry for: " + ext[i].InnerText, 
+                        this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+
+                xmlExtensions[i] = ext[i].InnerText;
+                xmlFolderNames[i] = folder[i].InnerText;
+                xmlActions[i] = action[i].InnerText;
+            }
+        }
+
+        //With FileInfo this is obsolete...deprecated
         /// <summary>
         /// Find the extension or filename from a full path to a file
         /// </summary>
@@ -213,12 +252,12 @@ namespace PlowTruck
         }
         #endregion Enumerations
     }
-    private class Log
+    internal class Log
     {
         #region Variables
         public string Path
         {
-            get;
+            get { return Path; }
             set
             {
                 if (!(Directory.Exists(value)))
@@ -228,7 +267,7 @@ namespace PlowTruck
         }
         public string Name
         {
-            get;
+            get { return Name; }
             set
             {
                 if (!(string.IsNullOrEmpty(value)))
