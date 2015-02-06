@@ -138,25 +138,38 @@ namespace PlowTruck
                 bool match = false;
                 int x=0;
                 do {
-                    if (file.Extension.Replace('.', ' ').Trim() == xmlExtensions[x])
+                    if (file.Extension == xmlExtensions[x])
                     {
                         match = true;
-                        // Validate action
-                        AddMatch(scan_matched, xmlActions[x], xmlFolderNames[x], xmlExtensions[x], file.FullName);
+                        // Validate action, if validated then add to matches otherwise log an error
+                        if (ValidateAction(xmlActions[x]))
+                            AddResult(scan_matched, xmlActions[x], xmlFolderNames[x], xmlExtensions[x], file.FullName);
+                        else
+                            plowLog.WriteLog(Log.LOG_TYPE.ERROR, String.Format("Action {0} for {1} did not validate!", xmlActions[x], file.FullName),
+                                this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                     }
                     else { x++; }
                 } 
                 while (!match);
-
+                // If the file did not match, add it to unmatched files
+                if (!(match))
+                {
+                    scan_unmatched = new XmlDocument();
+                    AddResult(scan_unmatched, "unmatched", "", "", file.FullName);
+                }
             }
 
         }
 
-        private void AddMatch(XmlDocument xDoc, PlowActions Action, string FolderName, string Extension, string FilePath)
+        private void AddResult(XmlDocument xDoc, string Action, string FolderName, string Extension, string FilePath)
         {
-            /*
+            /*(Matched)
              * <Results>
              *   <Result action="1" foldername="Text Documents" extension="txt">C:\Downloads\File.txt</Result>
+             * </Results>
+             * (Unmatched)
+             * <Results>
+             *   <Result action="unmatched" foldername="" extension="">C:\Downloads\File.123</Result>
              * </Results>
              */
             XmlElement result = xDoc.CreateElement("Result");
@@ -207,54 +220,23 @@ namespace PlowTruck
                 xmlActions[i] = action[i].InnerText;
             }
         }
-
-        //With FileInfo this is obsolete...deprecated
-        /// <summary>
-        /// Find the extension or filename from a full path to a file
-        /// </summary>
-        /// <param name="path">The fully qualified path (i.e. C:\Folder\SubFolder\File.ext)</param>
-        /// <param name="withoutExt">(Optional) Return the filename without the extension</param>
-        /// <returns>(string) File extenion or filename without extension</returns>
-        private string FindExtension(string path, bool withoutExt = false)
+        private bool ValidateAction(string Action)
         {
-            string[] tempPath;
-            string[] tempExt;
-            //Split the pathing apart
-            tempPath = path.Split('\\');
-            //Split the filename and ext apart
-            tempExt = tempPath[(tempPath.Length - 1)].Split('.');
-            //Return the last extension on the file name (this allows for files with multiple periods)
-            if (withoutExt)
-                if (tempExt.Length > 2)
-                {//if the file has more than one period in the name
-                    string tempResult = tempExt[0];
-                    for (int i = 1; i < (tempExt.Length - 1); i++)
-                    {
-                        tempResult = tempResult + "." + tempExt[i];
-                    }
-                    return tempResult;
+            bool valid = false;
+            foreach (PlowActions act in Enum.GetValues(typeof(PlowActions)))
+            {
+                if (Action == act.ToString())
+                {
+                    valid = true;
+                    return true;
                 }
                 else
-                {
-                    return tempExt[0];
-                }
-            else
-            {// return normally
-                return tempExt[tempExt.Length - 1];
+                    return false;
             }
+            if (valid) return true;
+            else return false;
         }
-        /// <summary>
-        /// Find the filename with extension from a full path
-        /// </summary>
-        /// <param name="path">Full path to the file</param>
-        /// <returns>(string) Filename with extension</returns>
-        private string FindFilename(string path)
-        {
-            string[] tempPath;
-            //Split the pathing apart
-            tempPath = path.Split('\\');
-            return tempPath[(tempPath.Length - 1)];
-        }
+
         #endregion Methods
 
         #region Enumerations
