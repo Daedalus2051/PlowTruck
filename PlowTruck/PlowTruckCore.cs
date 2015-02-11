@@ -21,7 +21,6 @@ namespace PlowTruck
     *      <Extension>
     *          <Name>exe</Name>
     *          <FolderName>Executables</FolderName>
-    *          <Include>true</Include>
     *          <Action>Move</Action>
     *      </Extension>
     *  </Extensions>
@@ -75,20 +74,15 @@ namespace PlowTruck
     *   -Create actions to be taken for files; move by default, delete, archive
     *   -Watch folder for new file arrivals; allow for archival (or move to a separate path for archival on a NAS drive) or deletion after a certain date (7-Zip?)
     */
-    public class PlowTruck
+    public class PlowTruckCore
     {
         #region Variables
         // PlowTruck() - These variables will more or less apply globally
         public string xPath
         {
-            get { return xPath; }
-            set
-            {
-                if (!(File.Exists(value)))
-                    throw new FileNotFoundException();
-                xPath = value;
-            }
+            get { return xmlPath; }
         }
+        private string xmlPath;
         private Log plowLog;
         public bool VerboseLogging = false;
         // LoadExtensions()
@@ -105,9 +99,13 @@ namespace PlowTruck
         #endregion
 
         #region Constructors
-        public PlowTruck(string XMLPath)
+        public PlowTruckCore(string XMLPath)
         {
-            xPath = XMLPath;
+
+            if (!(File.Exists(XMLPath)))
+                throw new FileNotFoundException();
+            xmlPath = XMLPath;
+
             plowLog = new Log(Environment.CurrentDirectory, "PlowTruck");
             // Initialize the XML document internally
             LoadExtensions();
@@ -128,6 +126,7 @@ namespace PlowTruck
                 LoadExtensions();
             // Initialize the XML results doc
             scan_matched = new XmlDocument();
+            scan_unmatched = new XmlDocument();
 
             // Get all of the files in the specified directory
             var di = new DirectoryInfo(ScanDirectory);
@@ -138,7 +137,11 @@ namespace PlowTruck
                 bool match = false;
                 int x=0;
                 do {
-                    if (file.Extension == xmlExtensions[x])
+                    if (x >= xmlExtensions.Length)
+                    {
+                        break;
+                    }
+                    else if (file.Extension == xmlExtensions[x])
                     {
                         match = true;
                         // Validate action, if validated then add to matches otherwise log an error
@@ -154,7 +157,6 @@ namespace PlowTruck
                 // If the file did not match, add it to unmatched files
                 if (!(match))
                 {
-                    scan_unmatched = new XmlDocument();
                     AddResult(scan_unmatched, "unmatched", "", "", file.FullName);
                 }
             }
@@ -231,7 +233,7 @@ namespace PlowTruck
                     return true;
                 }
                 else
-                    return false;
+                    valid = false;
             }
             if (valid) return true;
             else return false;
@@ -262,23 +264,14 @@ namespace PlowTruck
         #region Variables
         public string Path
         {
-            get { return Path; }
-            set
-            {
-                if (!(Directory.Exists(value)))
-                    throw new DirectoryNotFoundException();
-                Path = value;
-            }
+            get { return _path; }
         }
         public string Name
         {
-            get { return Name; }
-            set
-            {
-                if (!(string.IsNullOrEmpty(value)))
-                    Name = value + ".log";
-            }
+            get { return _name; }
         }
+        private string _path;
+        private string _name;
         public string ErrorMessage { get { return errormsg; } }
         private string errormsg;
         #endregion
@@ -296,15 +289,19 @@ namespace PlowTruck
         #region Constructor
         public Log(string sPath, string fName)
         {
-            // Validation occurs in the setters, no need to do double the work
-            Path = sPath;
-            Name = fName;
+            // Validation occurs in the setters, no need to do double the work.
+            if (!(Directory.Exists(sPath) || string.IsNullOrEmpty(sPath)))
+                throw new DirectoryNotFoundException();
+            _path = sPath;
+            if (!(string.IsNullOrEmpty(fName)))
+                _name = fName + ".log";
+
         }
         #endregion
         #region Methods
         public bool WriteLog(LOG_TYPE logtype, string message, string code_local)
         {
-            string full_path = Path + "\\" + Name;
+            string full_path = _path + "\\" + _name;
             try
             {
                 StreamWriter log_writer = new StreamWriter(full_path, true);
