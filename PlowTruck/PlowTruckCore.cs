@@ -84,7 +84,7 @@ namespace PlowTruck
         }
         private string xmlPath;
         private Log plowLog;
-        public bool VerboseLogging = false;
+        public bool VerboseLogging = true;
         // LoadExtensions()
         private XmlDocument xmlPlowExtensions;
         private string[] xmlExtensions;
@@ -93,9 +93,9 @@ namespace PlowTruck
         // Scan()
         public string ScanDirectory { get; set; }
         public XmlDocument ScanResults { get { return scan_matched; } }
-        public XmlDocument UnmatchedResults { get { return scan_unmatched; } }
+        //public XmlDocument UnmatchedResults { get { return scan_unmatched; } }
         private XmlDocument scan_matched;
-        private XmlDocument scan_unmatched;
+        //private XmlDocument scan_unmatched; // Since we're returning standardized results there's no reason to have this
         #endregion
 
         #region Constructors
@@ -126,7 +126,7 @@ namespace PlowTruck
                 LoadExtensions();
             // Initialize the XML results doc
             scan_matched = new XmlDocument();
-            scan_unmatched = new XmlDocument();
+            //scan_unmatched = new XmlDocument();
 
             // Get all of the files in the specified directory
             var di = new DirectoryInfo(ScanDirectory);
@@ -154,10 +154,11 @@ namespace PlowTruck
                     else { x++; }
                 } 
                 while (!match);
-                // If the file did not match, add it to unmatched files
+                // If the file did not match, add the unmatched tag
                 if (!(match))
                 {
-                    AddResult(scan_unmatched, "unmatched", "", "", file.FullName);
+                    //AddResult(scan_unmatched, "unmatched", "", "", file.FullName);
+                    AddResult(scan_matched, "unmatched", "", "", file.FullName);
                 }
             }
 
@@ -202,7 +203,15 @@ namespace PlowTruck
             if (VerboseLogging)
                 plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, "Loading XML file: " + xPath, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
             // Load the XML document
-            xmlPlowExtensions.Load(xPath);
+            try
+            {
+                xmlPlowExtensions.Load(xPath);
+            }
+            catch (XmlException xmlerr)
+            {// This allows the code to continue running, keep an eye on this as it may allow failures during Scan() parsing of the XML file
+                plowLog.WriteLog(Log.LOG_TYPE.ERROR, "Loading XML file failed. " + xmlerr.Message,
+                    this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+            }
             var ext = xmlPlowExtensions.SelectNodes("/Extensions/Extension/Name");
             var folder = xmlPlowExtensions.SelectNodes("/Extensions/Extension/FolderName");
             var action = xmlPlowExtensions.SelectNodes("/Extensions/Extension/Action");
@@ -306,7 +315,7 @@ namespace PlowTruck
             {
                 StreamWriter log_writer = new StreamWriter(full_path, true);
                 //[LOG_TYPE]    Date    Message (Code location)
-                log_writer.WriteLine("[{0}]\t{1}\t{2}\t({3})", logtype, System.DateTime.Now, message, code_local);
+                log_writer.WriteLine("{0}\t[{1}]{2}\t({3})", System.DateTime.Now, logtype, message, code_local);
                 log_writer.Close();
 
                 return true;
