@@ -101,7 +101,6 @@ namespace PlowTruck
         #region Constructors
         public PlowTruckCore(string XMLPath)
         {
-
             if (!(File.Exists(XMLPath)))
                 throw new FileNotFoundException();
             xmlPath = XMLPath;
@@ -163,17 +162,71 @@ namespace PlowTruck
             }
 
         }
+        public void Plow()
+        {
+            // Validate result
+            if (scan_matched == null)
+            {
+                plowLog.WriteLog(Log.LOG_TYPE.ERROR, "There are no results in the XML, Plow failed.",
+                    this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+            }
 
+            // Read through the XML results and process each one
+            XmlElement results_root = scan_matched.DocumentElement;
+            XmlNodeList results_nodes = results_root.SelectNodes("Result");
+            foreach (XmlNode childNode in results_nodes)
+            {
+                switch (childNode.Attributes["action"].Value)
+                {
+                    case "Move":
+                        if (VerboseLogging)
+                            plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, String.Format("Moving: {0} to {1}", childNode.InnerText, childNode.Attributes["foldername"].Value),
+                                this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+                        // DO move commands
+                        break;
+                    case "Delete":
+                        if (VerboseLogging)
+                            plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, String.Format("Deleting: {0}", childNode.InnerText),
+                                this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+                        // Do delete commands
+                        break;
+                    case "Archive":
+                        if (VerboseLogging)
+                            plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, String.Format("Archiving: {0} to {1}", childNode.InnerText, childNode.Attributes["foldername"].Value),
+                                this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+                        // Do archive commands
+                        break;
+                    case "Exclude":
+                        if (VerboseLogging)
+                            plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, String.Format("Excluding: {0}", childNode.InnerText),
+                                this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+                        // Do exclude commands
+                        break;
+                    case "MoveAndArchive":
+                        // Do move and archive commands
+                        break;
+                    default:
+                        // No action found
+                        plowLog.WriteLog(Log.LOG_TYPE.INFO, "No equivalent action found for: " + childNode.Attributes["action"].Value,
+                            this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+                        break;
+                }
+            }
+        }
         private void AddResult(XmlDocument xDoc, string Action, string FolderName, string Extension, string FilePath)
         {
             /*(Matched)
              * <Results>
-             *   <Result action="1" foldername="Text Documents" extension="txt">C:\Downloads\File.txt</Result>
+             *   <Result action="move" foldername="Text Documents" extension="txt">C:\Downloads\File.txt</Result>
              * </Results>
              * (Unmatched)
              * <Results>
              *   <Result action="unmatched" foldername="" extension="">C:\Downloads\File.123</Result>
              * </Results>
+             * (Delete)
+             * <Result action="delete" foldername="" extension="txt">C:\Downloads\File.txt</Result>
+             * (Archive)
+             * <Result action="archive" foldername="C:\Temp\ArchiveFile.zip" extension="txt">C:\Downloads\File.txt</Result>
              */
             XmlElement result = xDoc.CreateElement("Result");
             if (xDoc.DocumentElement != null)
@@ -196,7 +249,6 @@ namespace PlowTruck
                 xDoc.AppendChild(root);
             }
         }
-
         private void LoadExtensions()
         {
             xmlPlowExtensions = new XmlDocument();
