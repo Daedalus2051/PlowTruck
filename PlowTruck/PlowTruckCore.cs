@@ -96,6 +96,8 @@ namespace PlowTruck
         //public XmlDocument UnmatchedResults { get { return scan_unmatched; } }
         private XmlDocument scan_matched;
         //private XmlDocument scan_unmatched; // Since we're returning standardized results there's no reason to have this
+        // Plow()
+        public string PlowDirectory { get; set; }
         #endregion
 
         #region Constructors
@@ -183,6 +185,7 @@ namespace PlowTruck
                             plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, String.Format("Moving: {0} to {1}", childNode.InnerText, childNode.Attributes["foldername"].Value),
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                         // DO move commands
+                        MoveFile(childNode.InnerText, childNode.Attributes["foldername"].Value, childNode.Attributes["extension"].Value);
                         break;
                     case "Delete":
                         if (VerboseLogging)
@@ -196,9 +199,8 @@ namespace PlowTruck
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                         // Do archive commands
                         break;
-                    case "Exclude":
-                        if (VerboseLogging)
-                            plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, String.Format("Excluding: {0}", childNode.InnerText),
+                    case "Exclude": case "Unmatched":
+                            plowLog.WriteLog(Log.LOG_TYPE.INFO, String.Format("Excluding: {0}", childNode.InnerText),
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                         // Do exclude commands
                         break;
@@ -210,6 +212,33 @@ namespace PlowTruck
                         plowLog.WriteLog(Log.LOG_TYPE.INFO, "No equivalent action found for: " + childNode.Attributes["action"].Value,
                             this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                         break;
+                }
+            }
+        }
+        private void MoveFile(string filePath, string folderPath, string fileExt)
+        {
+            if (!(Directory.Exists(PlowDirectory)))
+                throw new DirectoryNotFoundException(); //  This may not be necessary, however, it adds redundancy error handling
+
+            string newFolderPath = PlowDirectory + "\\" + folderPath;
+            string newFolderFilePath = PlowDirectory + "\\" + folderPath + "\\" + Path.GetFileName(filePath);
+            int rptFile = 1;
+
+            if (!(Directory.Exists(newFolderPath)))
+            {// If the directory doesn't exist, create it and move the file
+                Directory.CreateDirectory(newFolderPath);
+                File.Move(filePath, newFolderFilePath);
+            }
+            else // If the directory didn't exist we created it, but what if the file already exists in that directory
+            {
+                if (!(File.Exists(newFolderFilePath))) // If the file does not exist in the folder
+                { File.Move(filePath, newFolderFilePath); } // then just move it
+                else
+                {// Otherwise rename it until we have a filename that doesn't exist
+                    do { rptFile++; }
+                    while (File.Exists(newFolderPath + "\\" + Path.GetFileNameWithoutExtension(filePath) + " (" + rptFile + ")" + fileExt));
+                    // Then move the file
+                    File.Move(filePath, newFolderPath + "\\" + Path.GetFileNameWithoutExtension(filePath) + " (" + rptFile + ")" + fileExt);
                 }
             }
         }
