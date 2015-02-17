@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -192,15 +193,17 @@ namespace PlowTruck
                             plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, String.Format("Deleting: {0}", childNode.InnerText),
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                         // Do delete commands
+                        File.Delete(childNode.InnerText); // Since we're just deleting, there's no need to separate into an individual method
                         break;
                     case "Archive":
                         if (VerboseLogging)
                             plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, String.Format("Archiving: {0} to {1}", childNode.InnerText, childNode.Attributes["foldername"].Value),
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                         // Do archive commands
+
                         break;
                     case "Exclude": case "Unmatched":
-                            plowLog.WriteLog(Log.LOG_TYPE.INFO, String.Format("Excluding: {0}", childNode.InnerText),
+                            plowLog.WriteLog(Log.LOG_TYPE.INFO, String.Format("Excluding: {0} Reason: {1}", childNode.InnerText, childNode.Attributes["action"].Value),
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                         // Do exclude commands
                         break;
@@ -241,6 +244,17 @@ namespace PlowTruck
                     File.Move(filePath, newFolderPath + "\\" + Path.GetFileNameWithoutExtension(filePath) + " (" + rptFile + ")" + fileExt);
                 }
             }
+        }
+        private void ArchiveFile(string filePath, string zipPath)
+        {
+            zipPath = ScanDirectory + "\\" + zipPath;
+            string temp_dir = Environment.CurrentDirectory + "\\tempdir";
+            Directory.CreateDirectory(temp_dir);
+
+            File.Move(filePath, temp_dir);
+            ZipFile.CreateFromDirectory(temp_dir, zipPath);
+
+            Directory.Delete(temp_dir);
         }
         private void AddResult(XmlDocument xDoc, string Action, string FolderName, string Extension, string FilePath)
         {
