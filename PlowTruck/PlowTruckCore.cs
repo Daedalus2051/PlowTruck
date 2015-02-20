@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
@@ -200,7 +201,7 @@ namespace PlowTruck
                             plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, String.Format("Archiving: {0} to {1}", childNode.InnerText, childNode.Attributes["foldername"].Value),
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                         // Do archive commands
-
+                        ArchiveFile(childNode.InnerText, childNode.Attributes["foldername"].Value);
                         break;
                     case "Exclude": case "Unmatched":
                             plowLog.WriteLog(Log.LOG_TYPE.INFO, String.Format("Excluding: {0} Reason: {1}", childNode.InnerText, childNode.Attributes["action"].Value),
@@ -247,6 +248,7 @@ namespace PlowTruck
         }
         private void ArchiveFile(string filePath, string zipPath)
         {
+            /*
             zipPath = ScanDirectory + "\\" + zipPath;
             string temp_dir = Environment.CurrentDirectory + "\\tempdir";
             Directory.CreateDirectory(temp_dir);
@@ -254,7 +256,24 @@ namespace PlowTruck
             File.Move(filePath, temp_dir);
             ZipFile.CreateFromDirectory(temp_dir, zipPath);
 
-            Directory.Delete(temp_dir);
+            Directory.Delete(temp_dir,true);*/
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.CreateNoWindow = true;
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            startInfo.FileName = @"C:\Program Files\7-Zip\7z.exe";
+            startInfo.Arguments = "a " + zipPath + " " + filePath;
+            try
+            {
+                using (Process proc_7z = Process.Start(startInfo))
+                {
+                    proc_7z.WaitForExit();
+                }
+            }
+            catch (Exception err)
+            {
+                plowLog.WriteLog(Log.LOG_TYPE.ERROR, "Error in archive step: " + err.Message,
+                    this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+            }
         }
         private void AddResult(XmlDocument xDoc, string Action, string FolderName, string Extension, string FilePath)
         {
@@ -265,6 +284,7 @@ namespace PlowTruck
              * (Unmatched)
              * <Results>
              *   <Result action="unmatched" foldername="" extension="">C:\Downloads\File.123</Result>
+             *   <Result action="excluded" ... </Result>
              * </Results>
              * (Delete)
              * <Result action="delete" foldername="" extension="txt">C:\Downloads\File.txt</Result>
@@ -274,7 +294,7 @@ namespace PlowTruck
             XmlElement result = xDoc.CreateElement("Result");
             if (xDoc.DocumentElement != null)
             {
-                result.SetAttribute("action", Action.ToString());
+                result.SetAttribute("action", Action);
                 result.SetAttribute("foldername", FolderName);
                 result.SetAttribute("extension", Extension);
                 result.InnerText = FilePath;
@@ -284,7 +304,7 @@ namespace PlowTruck
             {
                 XmlElement root = xDoc.CreateElement("Results");
                 //XmlElement result = xDoc.CreateElement("Result");
-                result.SetAttribute("action", Action.ToString());
+                result.SetAttribute("action", Action);
                 result.SetAttribute("foldername", FolderName);
                 result.SetAttribute("extension", Extension);
                 result.InnerText = FilePath;
@@ -409,8 +429,8 @@ namespace PlowTruck
             try
             {
                 StreamWriter log_writer = new StreamWriter(full_path, true);
-                //[LOG_TYPE]    Date    Message (Code location)
-                log_writer.WriteLine("{0}\t[{1}]{2}\t({3})", System.DateTime.Now, logtype, message, code_local);
+                //Date [LOG_TYPE]   Message (Code location)
+                log_writer.WriteLine("{0}[{1}]\t{2}\t({3})", System.DateTime.Now, logtype, message, code_local);
                 log_writer.Close();
 
                 return true;
