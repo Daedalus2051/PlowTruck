@@ -1,0 +1,8 @@
+# git ignore file
+Plow_Test/App.config
+Plow_Test/bin/*
+Plow_Test/obj/*
+Plow_Test/*
+PlowTruck.v11.suo
+PlowTruck/bin/Debug/*
+PlowTruck/obj/*
