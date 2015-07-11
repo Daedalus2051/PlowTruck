@@ -207,11 +207,20 @@ namespace PlowTruck
                         break;
                     case "MoveAndArchive":
                         // Do move and archive commands
+
                         break;
                     default:
                         // No action found
-                        plowLog.WriteLog(Log.LOG_TYPE.INFO, "No equivalent action found for: " + childNode.Attributes["action"].Value,
-                            this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+                        if (VerboseLogging) 
+                        {
+                            plowLog.WriteLog(Log.LOG_TYPE.INFO, "No equivalent action found for: " + childNode.Attributes["action"].Value + " [File]::" + childNode.InnerText,
+                                this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+                        }
+                        else
+                        {
+                            plowLog.WriteLog(Log.LOG_TYPE.INFO, "No equivalent action found for: " + childNode.Attributes["action"].Value,
+                                this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+                        }
                         break;
                 }
             }
@@ -335,7 +344,7 @@ namespace PlowTruck
             for (int i = 0; i < ext.Count; i++)
             {
                 if (VerboseLogging)
-                    plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, "Loading XML entry for: " + ext[i].InnerText, 
+                    plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, "Loaded XML entry for: " + ext[i].InnerText, 
                         this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
 
                 xmlExtensions[i] = ext[i].InnerText;
