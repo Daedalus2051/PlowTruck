@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlowTruck", "PlowTruck\PlowTruck.csproj", "{EB8198FA-464B-4162-ACA9-2B2D81EE2639}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plow_Test", "Plow_Test\Plow_Test.csproj", "{1F89912E-77BD-4D4B-AAC4-CD5E7B32568F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlowTruckConsole", "PlowTruckConsole\PlowTruckConsole.csproj", "{3925B942-D2B1-401A-9E8F-6CA255792DCB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +15,10 @@ Global
 		{EB8198FA-464B-4162-ACA9-2B2D81EE2639}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB8198FA-464B-4162-ACA9-2B2D81EE2639}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB8198FA-464B-4162-ACA9-2B2D81EE2639}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1F89912E-77BD-4D4B-AAC4-CD5E7B32568F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F89912E-77BD-4D4B-AAC4-CD5E7B32568F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F89912E-77BD-4D4B-AAC4-CD5E7B32568F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F89912E-77BD-4D4B-AAC4-CD5E7B32568F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3925B942-D2B1-401A-9E8F-6CA255792DCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3925B942-D2B1-401A-9E8F-6CA255792DCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3925B942-D2B1-401A-9E8F-6CA255792DCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3925B942-D2B1-401A-9E8F-6CA255792DCB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
