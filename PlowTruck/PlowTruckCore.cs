@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Xml;
+using Logger;
 
 namespace PlowTruck
 {
@@ -82,7 +83,7 @@ namespace PlowTruck
             get { return xmlPath; }
         }
         private string xmlPath;
-        private Log plowLog;
+        private LogWriter plowLog;
         public bool VerboseLogging = true;
         // LoadExtensions()
         private XmlDocument xmlPlowExtensions;
@@ -106,7 +107,7 @@ namespace PlowTruck
                 throw new FileNotFoundException();
             xmlPath = XMLPath;
 
-            plowLog = new Log(Environment.CurrentDirectory, "PlowTruck");
+            plowLog = new LogWriter(Environment.CurrentDirectory, "PlowTruck");
             // Initialize the XML document internally
             LoadExtensions();
         }
@@ -148,7 +149,7 @@ namespace PlowTruck
                         if (ValidateAction(xmlActions[x]))
                             AddResult(scan_matched, xmlActions[x], xmlFolderNames[x], xmlExtensions[x], file.FullName);
                         else
-                            plowLog.WriteLog(Log.LOG_TYPE.ERROR, String.Format("Action {0} for {1} did not validate!", xmlActions[x], file.FullName),
+                            plowLog.WriteLog(LogWriter.LOG_TYPE.ERROR, String.Format("Action {0} for {1} did not validate!", xmlActions[x], file.FullName),
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                     }
                     else { x++; }
@@ -168,7 +169,7 @@ namespace PlowTruck
             // Validate result
             if (scan_matched == null)
             {
-                plowLog.WriteLog(Log.LOG_TYPE.ERROR, "There are no results in the XML, Plow failed.",
+                plowLog.WriteLog(LogWriter.LOG_TYPE.ERROR, "There are no results in the XML, Plow failed.",
                     this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
             }
 
@@ -181,27 +182,27 @@ namespace PlowTruck
                 {
                     case "Move":
                         if (VerboseLogging)
-                            plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, String.Format("Moving: {0} to {1}", childNode.InnerText, childNode.Attributes["foldername"].Value),
+                            plowLog.WriteLog(LogWriter.LOG_TYPE.VERBOSE, String.Format("Moving: {0} to {1}", childNode.InnerText, childNode.Attributes["foldername"].Value),
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                         // DO move commands
                         MoveFile(childNode.InnerText, childNode.Attributes["foldername"].Value, childNode.Attributes["extension"].Value);
                         break;
                     case "Delete":
                         if (VerboseLogging)
-                            plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, String.Format("Deleting: {0}", childNode.InnerText),
+                            plowLog.WriteLog(LogWriter.LOG_TYPE.VERBOSE, String.Format("Deleting: {0}", childNode.InnerText),
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                         // Do delete commands
                         File.Delete(childNode.InnerText); // Since we're just deleting, there's no need to separate into an individual method
                         break;
                     case "Archive":
                         if (VerboseLogging)
-                            plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, String.Format("Archiving: {0} to {1}", childNode.InnerText, childNode.Attributes["foldername"].Value),
+                            plowLog.WriteLog(LogWriter.LOG_TYPE.VERBOSE, String.Format("Archiving: {0} to {1}", childNode.InnerText, childNode.Attributes["foldername"].Value),
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
-                        // Do archive commands
+                        // Do archive commands - In the XML, the file name must be specified and the FolderName will be used for the Archive name
                         ArchiveFile(childNode.InnerText, childNode.Attributes["foldername"].Value);
                         break;
                     case "Exclude": case "Unmatched":
-                            plowLog.WriteLog(Log.LOG_TYPE.INFO, String.Format("Excluding: {0} Reason: {1}", childNode.InnerText, childNode.Attributes["action"].Value),
+                        plowLog.WriteLog(LogWriter.LOG_TYPE.INFO, String.Format("Excluding: {0} Reason: {1}", childNode.InnerText, childNode.Attributes["action"].Value),
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                         // Do exclude commands
                         break;
@@ -213,12 +214,12 @@ namespace PlowTruck
                         // No action found
                         if (VerboseLogging) 
                         {
-                            plowLog.WriteLog(Log.LOG_TYPE.INFO, "No equivalent action found for: " + childNode.Attributes["action"].Value + " [File]::" + childNode.InnerText,
+                            plowLog.WriteLog(LogWriter.LOG_TYPE.INFO, "No equivalent action found for: " + childNode.Attributes["action"].Value + " [File]::" + childNode.InnerText,
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                         }
                         else
                         {
-                            plowLog.WriteLog(Log.LOG_TYPE.INFO, "No equivalent action found for: " + childNode.Attributes["action"].Value,
+                            plowLog.WriteLog(LogWriter.LOG_TYPE.INFO, "No equivalent action found for: " + childNode.Attributes["action"].Value,
                                 this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
                         }
                         break;
@@ -277,7 +278,7 @@ namespace PlowTruck
             }
             catch (Exception err)
             {
-                plowLog.WriteLog(Log.LOG_TYPE.ERROR, "Error in archive step: " + err.Message,
+                plowLog.WriteLog(LogWriter.LOG_TYPE.ERROR, "Error in archive step: " + err.Message,
                     this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
             }
         }
@@ -322,7 +323,7 @@ namespace PlowTruck
         {
             xmlPlowExtensions = new XmlDocument();
             if (VerboseLogging)
-                plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, "Loading XML file: " + xPath, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+                plowLog.WriteLog(LogWriter.LOG_TYPE.VERBOSE, "Loading XML file: " + xPath, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
             // Load the XML document
             try
             {
@@ -330,7 +331,7 @@ namespace PlowTruck
             }
             catch (XmlException xmlerr)
             {// This allows the code to continue running, keep an eye on this as it may allow failures during Scan() parsing of the XML file
-                plowLog.WriteLog(Log.LOG_TYPE.ERROR, "Loading XML file failed. " + xmlerr.Message,
+                plowLog.WriteLog(LogWriter.LOG_TYPE.ERROR, "Loading XML file failed. " + xmlerr.Message,
                     this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
             }
             var ext = xmlPlowExtensions.SelectNodes("/Extensions/Extension/Name");
@@ -344,7 +345,7 @@ namespace PlowTruck
             for (int i = 0; i < ext.Count; i++)
             {
                 if (VerboseLogging)
-                    plowLog.WriteLog(Log.LOG_TYPE.VERBOSE, "Loaded XML entry for: " + ext[i].InnerText, 
+                    plowLog.WriteLog(LogWriter.LOG_TYPE.VERBOSE, "Loaded XML entry for: " + ext[i].InnerText, 
                         this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
 
                 xmlExtensions[i] = ext[i].InnerText;
@@ -388,65 +389,5 @@ namespace PlowTruck
             MoveAndArchive = 4
         }
         #endregion Enumerations
-    }
-    internal class Log
-    {
-        #region Variables
-        public string Path
-        {
-            get { return _path; }
-        }
-        public string Name
-        {
-            get { return _name; }
-        }
-        private string _path;
-        private string _name;
-        public string ErrorMessage { get { return errormsg; } }
-        private string errormsg;
-        #endregion
-        #region Enumerations
-        public enum LOG_TYPE
-        {
-            WARNING,
-            VERBOSE,
-            DEBUG,
-            ERROR,
-            INFO,
-            CONFIG
-        }
-        #endregion
-        #region Constructor
-        public Log(string sPath, string fName)
-        {
-            // Validation occurs in the setters, no need to do double the work.
-            if (!(Directory.Exists(sPath) || string.IsNullOrEmpty(sPath)))
-                throw new DirectoryNotFoundException();
-            _path = sPath;
-            if (!(string.IsNullOrEmpty(fName)))
-                _name = fName + ".log";
-
-        }
-        #endregion
-        #region Methods
-        public bool WriteLog(LOG_TYPE logtype, string message, string code_local)
-        {
-            string full_path = _path + "\\" + _name;
-            try
-            {
-                StreamWriter log_writer = new StreamWriter(full_path, true);
-                //Date [LOG_TYPE]   Message (Code location)
-                log_writer.WriteLine("{0}[{1}]\t{2}\t({3})", System.DateTime.Now, logtype, message, code_local);
-                log_writer.Close();
-
-                return true;
-            }
-            catch(Exception err)
-            {
-                errormsg = "[Log>>WriteLog]: " + err.Message;
-                return false;
-            }
-        }
-        #endregion Methods
     }
 }
