@@ -1,8 +1,14 @@
 # git ignore file
-Plow_Test/App.config
-Plow_Test/bin/*
-Plow_Test/obj/*
-Plow_Test/*
-PlowTruck.v11.suo
-PlowTruck/bin/Debug/*
-PlowTruck/obj/*
+bin
+obj
+*.suo
+*.user
+*.sln.docstates
+
+[Dd]ebug/
+[Rr]elease/
+*.obj
+*.pdb
+
+Thumbs.db
+Desktop.ini
