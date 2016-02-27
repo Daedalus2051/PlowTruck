@@ -10,60 +10,64 @@ namespace PlowTruckConsole
     {
         static void Main(string[] args)
         {
-            int choice=-1;
-            do {
-                DrawMenu();
+            Console.WriteLine("Initializing...");
 
-                try { choice = Convert.ToInt16(Console.ReadLine()); }
-                catch (FormatException)
-                {
-                    Console.WriteLine("Input was not a valid choice!");
-                }
+            // Check for command line args first
+
+            // Process args if they were passed
+
+            // Run the menu system if no command line arguments were passed
+            RunMenu();
+
+            Console.WriteLine("Thank you for using the PlowTruck!");
+        }
+
+        public static void RunMenu()
+        {
+            bool isRunning = true;
+            int choice = -1;
+
+            // Create the root menu for users
+            MenuSystem rootMenu = new MenuSystem();
+            rootMenu.Greeting = "Welcome to the PlowTruck console!";
+            string[] rootMenuDef = new string[] { "Option 1", "Option 2", "Option 3", "Exit" };
+            rootMenu.MenuItems = rootMenuDef;
+            rootMenu.Prompt = "Choice->";
+
+            while (isRunning)
+            {
+                rootMenu.DrawMenu();
+                choice = rootMenu.ReadInput();
 
                 switch (choice)
                 {
                     case 1:
-                        Console.WriteLine("User chose option {0}", choice);
+                        Console.WriteLine("Choice made: {0} yay!", choice);
+                        Console.ReadLine();
                         break;
+
                     case 2:
-                        Console.WriteLine("User chose option {0}", choice);
+                        Console.WriteLine("Choice made: {0} @choicemade", choice);
+                        Console.ReadLine();
                         break;
+
                     case 3:
-                        Console.WriteLine("User chose option {0}", choice);
+                        Console.WriteLine("Choice made: {0} #menusystemsareawesome", choice);
+                        Console.ReadLine();
                         break;
+
                     case 4:
-                        Console.WriteLine("User chose option {0}", choice);
-                        break;
-                    case 5:
-                        Console.WriteLine("User chose option {0}", choice);
-                        break;
-                    case 0:
-                        Console.WriteLine("User chose option {0}, exiting...", choice);
+                        Console.WriteLine("Choice made: {0} quitting...", choice);
+                        isRunning = false;
                         break;
 
                     default:
-                        Console.WriteLine("Choice {0} does not exist!", choice);
-                        choice = -1;
+                        Console.WriteLine("Command '{0}' not recognized.", choice);
+                        Console.ReadLine();
                         break;
                 }
-
-                Console.ReadLine();
             }
-            while (choice != 0);
-            Console.WriteLine("Thank you for using the PlowTruck!");
-            Console.ReadLine();
-        }
 
-        public static void DrawMenu()
-        {
-            Console.Clear();
-            Console.WriteLine("Welcome to the PlowTruck!");
-            Console.WriteLine("\t1. Option 1");
-            Console.WriteLine("\t2. Option 2");
-            Console.WriteLine("\t3. Option 3");
-            Console.WriteLine("\t4. Option 4");
-            Console.WriteLine("\t5. Option 5");
-            Console.WriteLine("\t0. Exit");
         }
     }
 }
