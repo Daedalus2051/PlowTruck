@@ -1,9 +1,0 @@
-H:\Daedalus\Documents\GitHub\PlowTruck\PlowTruckConsole\bin\Debug\PlowTruckConsole.exe.config
-H:\Daedalus\Documents\GitHub\PlowTruck\PlowTruckConsole\bin\Debug\PlowTruckConsole.exe
-H:\Daedalus\Documents\GitHub\PlowTruck\PlowTruckConsole\bin\Debug\PlowTruckConsole.pdb
-H:\Daedalus\Documents\GitHub\PlowTruck\PlowTruckConsole\obj\Debug\PlowTruckConsole.csprojResolveAssemblyReference.cache
-H:\Daedalus\Documents\GitHub\PlowTruck\PlowTruckConsole\obj\Debug\PlowTruckConsole.exe
-H:\Daedalus\Documents\GitHub\PlowTruck\PlowTruckConsole\obj\Debug\PlowTruckConsole.pdb
-E:\Russell\Documents\GitHub\PlowTruck\PlowTruckConsole\bin\Debug\PlowTruckConsole.exe.config
-E:\Russell\Documents\GitHub\PlowTruck\PlowTruckConsole\obj\Debug\PlowTruckConsole.exe
-E:\Russell\Documents\GitHub\PlowTruck\PlowTruckConsole\obj\Debug\PlowTruckConsole.pdb
