@@ -1,0 +1,69 @@
+﻿PlowTruck
+	Core - Master class that accesses other classes to perform the operations needed
+	Operations - Contains methods necessary to Scan, Plow, and perform other operations on the system
+	Configuration - Object that will contain the configuration of what files go where
+	Configuraitons - List<Configuration>
+	Actions - Contains the definition for how the file will be actioned
+	Result - Data structure for the objects that will be used to describe files and operations
+	Results - List<Result>
+	
+What are we concerned about?
+	Files
+		Extensions (as per configuration)
+			Has extension name
+			Has destination folder name
+			Has date criteria
+			
+	Actions
+		Should be a class that contains the necessary properties per type
+			Move 
+				- has a destination property
+			Archive
+				- has a file destination property
+			Delete
+				- doesn't really need anything
+			Exclude (obsolete) - if we filter the file search for the extension, this isn't really needed
+				- also doesn't really need anything
+			MoveAndArchive
+				- has a destination property (i.e. folder to move to)
+				- has a file destination property (archive filename only, i.e. Archive.7z)
+	
+	Scan - Returns Results collection
+		Get files from specified directory (we can filter for the extension; will result in multiple passes, but no need for exclude action)
+		Foreach file
+			Examine criteria for file: date, date range
+			Set action to be taken (read from configuration)
+			Store in result set
+		Return result set
+
+[Definitions]
+Core
+	Core() { create Operations class } - we'll always need an operations class
+	Results ScanDir(string dirPath) - Will scan the directory and provide a collection of results
+	Results PlowDir(string dirPath) - Will plow the directory and provide a collection of results
+	void SetConfiguration(string configFile) - Will attempt to load an xml file of configurations
+	void SetConfiguration(Configuration config) - Will load configs when passed a collection
+
+Operations
+	Scan(string dirPath, Configuration config) - Will scan based on configurations
+	Plow(string dirPath, Configuration config) - Will scan first and then plow
+	Plow(Results scanResults) - Will plow based on the results already found in a scan
+	<create/save configuration>
+
+Configuration
+	string Extension
+	string DestinationFolder
+	date FixedDate
+	daterange RangedDate
+	Action actiontype
+
+Actions - This seems fucky...
+	Move
+		string Destination
+	Archive
+		string ArchiveFilename
+	Delete
+		string Filename?
+	MoveAndArchive
+		string Destination
+		string ArchiveFilename

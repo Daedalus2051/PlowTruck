@@ -59,7 +59,7 @@ Changes v0.12 - (Alpha 2)
    -MoveModes(2): 
       Mode 1 will allow the user to move files into the same folder but different sub-folders (think organizing into bins)
       Mode 2 will allow the user to move files to a completely different path (think reorganizing to another room)
-   -[Created-Implemented, not yet refined] PlowTruckFleet Class
+   -[Removed - needed to rewrite][Created-Implemented, not yet refined] PlowTruckFleet Class
       This will allow the user to create and use multiple plow truck services to watch multiple folders
    -[Complete] Restore default XML tree; this will rebuild the default XML file from hard code
    -Multiple user support
