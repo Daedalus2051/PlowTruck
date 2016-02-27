@@ -8,6 +8,7 @@
 *.sln.docstates
 
 # Ignore specific projects
+Plow_Test
 Plow_Test/*
 
 # Build results
@@ -158,22 +159,3 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
-=======
-# git ignore file
-bin
-obj
-*.suo
-*.user
-*.sln.docstates
-
-[Dd]ebug/
-[Rr]elease/
-*.obj
-*.pdb
-
-Thumbs.db
-Desktop.ini
->>>>>>> origin/master
-
-*.cache
-*.cache
