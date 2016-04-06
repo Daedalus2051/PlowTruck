@@ -36,13 +36,28 @@ What are we concerned about?
 			Store in result set
 		Return result set
 
+[Structure]
+	Application
+	-> Calls "Core" class to set configs and run operations
+		Core Class
+		-> Instantiates Operations class to handle said operations for each core
+		-> Uses local Configuration variabels
+			Operations Class
+			-> Calls methods that carry out the plowing and loading operations
+	Configuration
+		-> Stores the structure for the configuration of a Core class to push to Operations class
+	Actions
+		-> Stores information about how the action should be performed
+
 [Definitions]
 Core
 	Core() { create Operations class } - we'll always need an operations class
 	Results ScanDir(string dirPath) - Will scan the directory and provide a collection of results
 	Results PlowDir(string dirPath) - Will plow the directory and provide a collection of results
 	void SetConfiguration(string configFile) - Will attempt to load an xml file of configurations
+	-> Sets local variable
 	void SetConfiguration(Configuration config) - Will load configs when passed a collection
+	-> Sets local variable
 
 Operations
 	Scan(string dirPath, Configuration config) - Will scan based on configurations
