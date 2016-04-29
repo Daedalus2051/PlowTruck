@@ -41,7 +41,7 @@ What are we concerned about?
 	-> Calls "Core" class to set configs and run operations
 		Core Class
 		-> Instantiates Operations class to handle said operations for each core
-		-> Uses local Configuration variabels
+		-> Uses local Configuration variables
 			Operations Class
 			-> Calls methods that carry out the plowing and loading operations
 	Configuration
