@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
+    <Compile Include="Core.cs" />
     <Compile Include="Operations.cs" />
     <Compile Include="PlowTruckCore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
