@@ -13,9 +13,25 @@ namespace PlowTruckConsole
             Console.WriteLine("Initializing...");
 
             // Check for command line args first
+            if (args.Length > 0)
+            {
+                // Process args if they were passed
+                foreach (string arg in args)
+                {
+                    switch (arg)
+                    {
+                            // TODO: Define switch arguments
+                        case "":
 
-            // Process args if they were passed
+                            break;
 
+                        default:
+                            Console.WriteLine("Switch '{0}' not recognized.", arg);
+                            return;
+                    }
+                }
+                return; // Make sure we don't go into the menu system if args are passed.
+            }
             // Run the menu system if no command line arguments were passed
             RunMenu();
 
