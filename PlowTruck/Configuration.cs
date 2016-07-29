@@ -25,6 +25,9 @@ namespace PlowTruck
         private Dictionary<string, string> _extLookup;
         private Dictionary<string, string> _extAction;
 
+        /// <summary>
+        /// Get/Set the path of what folder is to be Plowed.
+        /// </summary>
         public string PlowPath
         {
             get { return _plowPath; }
@@ -39,6 +42,9 @@ namespace PlowTruck
                 }
             }
         }
+        /// <summary>
+        /// Get/Set the destination path (where the files should be moved?).
+        /// </summary>
         public string DestinationPath
         {
             get { return _destPath; }
@@ -53,6 +59,9 @@ namespace PlowTruck
                 }
             }
         }
+        /// <summary>
+        /// Get/Sets the Plow Truck XML file path
+        /// </summary>
         public string ExtensionDefinitionPath
         {
             get { return _extXMLFile; }
@@ -67,10 +76,16 @@ namespace PlowTruck
                 }
             }
         }
+        /// <summary>
+        /// Provides key, value information about the Extension/Folder.
+        /// </summary>
         public Dictionary<string, string> ExtensionLookup
         {
             get { return _extLookup; }
         }
+        /// <summary>
+        /// Provides key, value information about the Extension/Action.
+        /// </summary>
         public Dictionary<string, string> ExtensionAction
         {
             get { return _extAction; }
