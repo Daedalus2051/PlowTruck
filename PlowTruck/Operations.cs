@@ -34,37 +34,32 @@ namespace PlowTruck
 
             foreach(FileInfo fInfo in fInfoCol)
             {
-                string extFolder="";
+                string rowAction = "", extFolder ="";
                 if(conf.ExtensionLookup.TryGetValue(fInfo.Extension, out extFolder))
                 {
                     // We made a match, now populate the data and add it to the dataset
-                    DataRow row; string rowAction = "";
-                    row = ScanResults.ResultSet.Tables[0].NewRow();
-                    row[0] = fInfo.FullName;
-                    row[1] = fInfo.Extension;
                     conf.ExtensionAction.TryGetValue(fInfo.Extension, out rowAction);
-                    row[2] = rowAction;
-                    row[3] = extFolder;
-
-                    ScanResults.ResultSet.Tables[0].Rows.Add(row);
+                    ScanResults.AddRow(fInfo.FullName, fInfo.Extension, rowAction, extFolder, true);
                 }
                 else
                 {
-                    // Add to unmatched list?
+                    // Add to unmatched list
+                    conf.ExtensionAction.TryGetValue(fInfo.Extension, out rowAction);
+                    ScanResults.AddRow(fInfo.FullName, fInfo.Extension, rowAction, extFolder, false);
                 }
             }
         }
 
         // Plow (scan first)
 
-        // Plow (plow based on scan results
+        // Plow (plow based on scan results)
 
         #region Classes
         public class Results
         {
             public DataSet ResultSet { get; set; }
             private DataTable _table = new DataTable("Results");
-            private DataColumn[] _columns = new DataColumn[4];
+            private DataColumn[] _columns = new DataColumn[5];
             public Results()
             {
                 ResultSet.Tables.Add(_table);
@@ -72,10 +67,32 @@ namespace PlowTruck
                 _columns[1] = new DataColumn("Extension");
                 _columns[2] = new DataColumn("Action");
                 _columns[3] = new DataColumn("ActionValue");
+                _columns[4] = new DataColumn("Matched");
 
                 foreach(DataColumn col in _columns)
                 {
                     ResultSet.Tables[0].Columns.Add(col);
+                }
+            }
+
+            public bool AddRow(string FileName, string Extension, string Action, string Folder, bool Matched)
+            {
+                try
+                {
+                    DataRow row = ResultSet.Tables[0].NewRow();
+                    row[0] = FileName;
+                    row[1] = Extension;
+                    row[2] = Action;
+                    row[3] = Folder;
+                    row[4] = Matched;
+                    ResultSet.Tables[0].Rows.Add(row);
+                    return true;
+                }
+                catch (Exception AddEx)
+                {
+                    // TODO: Log the exception
+                    Console.WriteLine($"Exception adding row: {AddEx.Message}");
+                    return false;
                 }
             }
         }
